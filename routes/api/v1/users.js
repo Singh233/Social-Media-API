@@ -12,7 +12,6 @@ router.post('/create', usersApi.create);
 
 router.post(
     '/auth/google',
-    verifyGoogleToken,
     usersApi.createGoogleSession,
 );
 
