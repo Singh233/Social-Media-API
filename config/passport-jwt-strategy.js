@@ -9,20 +9,15 @@ let opts = {
     secretOrKey: env.jwt_secret
 }
 
-passport.use(new JWTStrategy(opts, function(jwtPayLoad, done) {
+passport.use(new JWTStrategy(opts, async function(jwtPayLoad, done) {
 
-    User.findById(jwtPayLoad._id, function(error, user) {
-        if (error) {
-            console.log("error in finding user from JWT");
-            return;
-        }
-
-        if (user) {
-            return done(null, user);
-        } else {
-            return done(null, false);
-        }
-    })
+    let user = await User.findById(jwtPayLoad._id);
+    if(user) {
+        return done(null, user);
+    }
+    else {
+        return done(null, false);
+    }
 }));
 
 module.exports = passport;
