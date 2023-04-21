@@ -22,22 +22,6 @@ module.exports.createSession = async function (request, response) {
             });
         }
 
-        // find posts of user
-        let posts = await Post.find({ user: user._id }).sort('-createdAt');
-
-        // find followers of user and populate from_user
-        let followers = await Friendships.find({ to_user: user._id }).populate(
-            'from_user'
-        );
-
-        // find following of user
-        let following = await Friendships.find({
-            from_user: user._id,
-        }).populate('to_user');
-        user.posts = posts;
-        user.followers = followers;
-        user.following = following;
-
         // expires in 11 days
         let expiresIn = 11 * 24 * 60 * 60 * 1000;
         // console.log('user: ', user);
@@ -154,22 +138,6 @@ module.exports.createGoogleSession = async function (request, response) {
                 message: 'Invalid username or password!',
             });
         }
-
-        // find posts of user
-        let posts = await Post.find({ user: user._id }).sort('-createdAt');
-
-        // find followers of user and populate from_user
-        let followers = await Friendships.find({ to_user: user._id }).populate(
-            'from_user'
-        );
-
-        // find following of user
-        let following = await Friendships.find({
-            from_user: user._id,
-        }).populate('to_user');
-        user.posts = posts;
-        user.followers = followers;
-        user.following = following;
 
         // expires in 11 days
         let expiresIn = 11 * 24 * 60 * 60 * 1000;

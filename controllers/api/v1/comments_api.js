@@ -58,11 +58,10 @@ module.exports.create = async function(request, response) {
 
 module.exports.destroy = async function(request, response) {
     try {
-        let comment = await Comment.findById(request.params.id);
+        let comment = await Comment.findByIdAndRemove(request.params.id);
         if (comment.user == request.user.id) {
             let postId = comment.post;
-            comment.remove();
-            console.log('postid', postId)
+            // console.log('postid', postId)
 
             await Post.findByIdAndUpdate(postId, {
                 $pull: {comments: request.params.id}

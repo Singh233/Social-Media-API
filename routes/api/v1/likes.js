@@ -1,5 +1,4 @@
 const express = require('express');
-const { checkToken } = require('../../../config/check_token');
 const router = express.Router();
 const passport = require('passport');
 
