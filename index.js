@@ -2,6 +2,7 @@
 const express = require('express');
 const passport = require('./config/passport-jwt-strategy');
 const port = process.env.PORT || 6000;
+const cors = require('cors');
 
 
 
@@ -15,6 +16,10 @@ const app = express();
 
 //urlencoded to decode the data send by forms
 app.use(express.urlencoded());
+
+app.use(cors({
+    origin: ['https://chillsanam.me', 'http://localhost:3000']
+}))
 
 // use passport
 app.use(passport.initialize());
