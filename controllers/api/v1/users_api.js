@@ -86,47 +86,30 @@ module.exports.profile = async function (request, response) {
 // Create user
 module.exports.create = async function (request, response) {
     try {
-        User.findOne({ email: request.body.email }, function (error, user) {
-            if (error) {
-                console.log('Error in finding user in singing up');
+        let user = await User.findOne({ email: request.body.email });
 
-                return response.status(500).json({
-                    message: 'Internal Server Error',
-                    success: false,
-                });
-            }
+        if (!user) {
+            let newUser = await User.create(request.body);
 
-            if (!user) {
-                User.create(request.body, function (error, user) {
-                    if (error) {
-                        console.log('Error in creating user while singing up');
-                        return response.status(500).json({
-                            message: 'Internal Server Error',
-                            success: false,
-                        });
-                    }
-
-                    // expires in 11 days
-                    let expiresIn = 11 * 24 * 60 * 60 * 1000;
-                    // console.log('user: ', user);
-                    return response.json(200, {
-                        message: 'Sign up successfull',
-                        success: true,
-                        data: {
-                            token: jwt.sign(user.toJSON(), env.jwt_secret, {
-                                expiresIn,
-                            }), //
-                            user: user,
-                        },
-                    });
-                });
-            } else {
-                return response.status(200).json({
-                    message: 'You have already signed up, please login',
-                    success: false,
-                });
-            }
-        });
+            // expires in 11 days
+            let expiresIn = 11 * 24 * 60 * 60 * 1000;
+            // console.log('user: ', user);
+            return response.json(200, {
+                message: 'Sign up successfull',
+                success: true,
+                data: {
+                    token: jwt.sign(user.toJSON(), env.jwt_secret, {
+                        expiresIn,
+                    }), //
+                    user: newUser,
+                },
+            });
+        } else {
+            return response.status(200).json({
+                message: 'You have already signed up, please login',
+                success: false,
+            });
+        }
     } catch (error) {
         console.log('******* ', error);
         return response.json(500, {
@@ -182,16 +165,6 @@ module.exports.createGoogleSession = async function (request, response) {
 
 
 module.exports.destroySession = function(request, response) {
-    request.logout(function(error) {
-        if (error) {
-            console.log("error signing out");
-            return response.json(500, {
-                message: "Internal Server Error",
-                success: false
-            });
-        }
-    });
-
 
     return response.json(200, {
         success: true,

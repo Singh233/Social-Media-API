@@ -19,32 +19,23 @@ module.exports.verifyGoogleToken = async function (request, response, next) {
         const payload = ticket.getPayload();
         const { sub, name, email, picture } = payload;
 
-        User.findOne({email: email}).exec(function(error, user) {
-            if (error) {
-                console.log("Error in finding user google auth", error);
-                return next();
-            }
-            if (user) {
-                //if found set this user as req.user
-                request.user = user;
-                return next();
-            }
-            
-            User.create({
-                // if not found create the user and set it as req.user
-                name: name,
-                email: email,
-                password: crypto.randomBytes(20).toString('hex')
-            }, function(error, user) {
-                if (error) {
-                    console.log("Error in creating user google auth", error);
-                    next();
-                }
+        let user = await User.findOne({email: email});
 
-                request.user = user;
-                return next();
-            })
-        })
+        if (user) {
+            //if found set this user as req.user
+            request.user = user;
+            return next();
+        }
+        
+        let newUser = await User.create({
+            // if not found create the user and set it as req.user
+            name: name,
+            email: email,
+            password: crypto.randomBytes(20).toString('hex')
+        });
+        
+        request.user = newUser;
+        return next();
     } catch (error) {
         console.log('******* ', error);
         next();
