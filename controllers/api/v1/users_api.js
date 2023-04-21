@@ -4,6 +4,10 @@ const Friendships = require('../../../models/friendship');
 const jwt = require('jsonwebtoken');
 const { use } = require('passport');
 const env = require('../../../config/environment');
+const { OAuth2Client } = require('google-auth-library');
+const CLIENT_ID = env.google_clientID;
+const client = new OAuth2Client(CLIENT_ID);
+const crypto = require('crypto');
 
 module.exports.createSession = async function (request, response) {
 
@@ -120,13 +124,37 @@ module.exports.create = async function (request, response) {
 
 module.exports.createGoogleSession = async function (request, response) {
     try {
-        if (!request.user) {
+        let token = request.headers.authorization.split(' ')[1];
+        if (token == null) {
+            return response.json(401, {
+                message: 'Unauthorized',
+                });
+        }
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        const { sub, name, email, picture } = payload;
+
+        let user = await User.findOne({email: email});
+
+        if (!user) {
+            user = await User.create({
+                // if not found create the user and set it as req.user
+                name: name,
+                email: email,
+                password: crypto.randomBytes(20).toString('hex')
+            });
+        }
+        
+
+        if (!user) {
             return response.json(422, {
                 message: 'Invalid username or password!',
             });
         }
 
-        let user = request.user;
         // find posts of user
         let posts = await Post.find({ user: user._id }).sort('-createdAt');
 
